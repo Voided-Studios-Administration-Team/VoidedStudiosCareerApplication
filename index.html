@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Voided Studios Admin</title>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b0014;
+      color: white;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .box {
+      width: 650px;
+      background: #1a002b;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 6px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .loginBtn { background: purple; }
+
+    .app {
+      background: #2a0044;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .accept { background: green; }
+    .reject { background: red; }
+  </style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+  <div id="loginBox">
+    <h2>Admin Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button class="loginBtn" onclick="login()">Login</button>
+  </div>
+
+  <div id="panel" style="display:none;">
+    <h2>Applications</h2>
+    <div id="apps"></div>
+  </div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD0n32Zmp5x5l2ORsk2NC9ewOCP2b7J_I4",
+  authDomain: "voided-studios-website.firebaseapp.com",
+  projectId: "voided-studios-website",
+  storageBucket: "voided-studios-website.firebasestorage.app",
+  messagingSenderId: "455376066581",
+  appId: "1:455376066581:web:ac9417d969e76db36b561c"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function login() {
+  auth.signInWithEmailAndPassword(
+    document.getElementById("email").value,
+    document.getElementById("password").value
+  )
+  .then(() => {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    loadApps();
+  })
+  .catch(err => alert(err.message));
+}
+
+function loadApps() {
+  db.collection("applications")
+    .orderBy("submittedAt", "desc")
+    .onSnapshot(snapshot => {
+
+      const container = document.getElementById("apps");
+      container.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+
+        const div = document.createElement("div");
+        div.className = "app";
+
+        div.innerHTML = `
+          <b>${data.username}</b><br>
+          Role: ${data.role}<br>
+          Email: ${data.email}<br>
+          Discord: ${data.discord}<br>
+          Status: ${data.status || "pending"}<br>
+
+          <div class="row">
+            <button class="accept" onclick="acceptApp('${data.email}', '${data.username}')">Accept</button>
+            <button class="reject" onclick="declineApp('${data.email}', '${data.username}')">Decline</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    });
+}
+```
+
+---
+
+# 📧 MAILTO SYSTEM
+
+```js id="mailto_system_final"
+function acceptApp(email, username) {
+
+  const body =
+`Hello, ${username},
+
+we have looked into your application and have decided to accept it !
+
+We are glad to have you on our team!
+
+Cheers,
+Voided Studios Careers Team`;
+
+  window.location.href =
+    `mailto:${email}?subject=${encodeURIComponent("Voided Studios Application Decision")}&body=${encodeURIComponent(body)}`;
+}
+
+function declineApp(email, username) {
+
+  const body =
+`Hello, ${username},
+
+we have looked into your application and have decided to decline it .
+
+We are sorry, but you may try again!
+
+Cheers,
+Voided Studios Careers Team`;
+
+  window.location.href =
+    `mailto:${email}?subject=${encodeURIComponent("Voided Studios Application Decision")}&body=${encodeURIComponent(body)}`;
+}
+</script>
+
+</body>
+</html>
